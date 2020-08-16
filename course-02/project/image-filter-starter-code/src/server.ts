@@ -1,6 +1,5 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles} from './util/util';
 import {ImageFilterRouter} from "./image-filter/routes/image-filter.router";
 
 (async () => {
