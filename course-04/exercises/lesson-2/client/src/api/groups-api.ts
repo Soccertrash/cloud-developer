@@ -4,6 +4,7 @@ import { GroupUploadInfo } from '../types/GroupUploadInfo'
 
 export async function getGroups(): Promise<GroupModel[]> {
   console.log('Fetching groups')
+  console.log(`${apiEndpoint}/groups`)
 
   const response = await fetch(`${apiEndpoint}/groups`)
   const result = await response.json()
