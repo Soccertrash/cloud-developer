@@ -7,10 +7,18 @@ import {CreateTodoRequest} from '../../requests/CreateTodoRequest'
 import {TodoAccess} from "../../datalayer/todoAccess";
 import {createLogger} from "../../utils/logger";
 import {TodoItem} from "../../models/TodoItem";
+import {parseUserId} from "../../auth/utils";
 //import {parseUserId} from "../../auth/utils";
 
 const todoAccess = new TodoAccess();
 const logger = createLogger('createTodo');
+
+function getUserId(event: APIGatewayProxyEvent) {
+    const authorization = event.headers.Authorization
+    const split = authorization.split(' ')
+    const jwtToken = split[1]
+    return parseUserId(jwtToken);
+}
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
@@ -19,7 +27,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const newTodo: CreateTodoRequest = JSON.parse(event.body)
 
     const todoId = uuid.v4()
-    const userId = 'test';//parseUserId();
+    const userId = getUserId(event);
 
     const todoItem: TodoItem = {
         userId: userId,

@@ -17,6 +17,7 @@ provider:
 
   environment:
     TODO_TABLE: Todo-${self:provider.stage}
+    INDEX_NAME: Todo-Index-${self:provider.stage}
 
 functions:
 
@@ -47,6 +48,19 @@ functions:
       - http:
           method: post
           path: todos
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a todo item
+            description: Create a todo item
+            requestModels:
+              'application/json': TodoRequest
+
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
 #  # TODO: Configure this function
 #  UpdateTodo:
@@ -85,16 +99,64 @@ custom:
       inMemory: true
       migrate: true
 
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: TODO API
+        description: Serverless application for todo lists
+    models:
+      - name: TodoRequest
+        contentType: application/json
+        schema: ${file(models/create-todo-request.json)}
+
 resources:
   Resources:
     TodoDynamoDBTable:
       Type: AWS::DynamoDB::Table
+        Properties:
+          AttributeDefinitions:
+              - AttributeName: partitionKey
+                AttributeType: S
+                  - AttributeName: sortKey
+                    AttributeType: S
+                  - AttributeName: indexKey
+                    AttributeType: S
+          KeySchema:
+            - AttributeName: partitionKey
+              KeyType: HASH
+            - AttributeName: sortKey
+              KeyType: RANGE
+          BillingMode: PAY_PER_REQUEST
+          TableName: ${self:provider.environment.TODO_TABLE}
+          LocalSecondaryIndexes:
+            - IndexName: ${self:provider.environment.INDEX_NAME}
+              KeySchema:
+                - AttributeName: partitionKey
+                  KeyType: HASH
+                - AttributeName: indexKey
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: ALL # What attributes will be copied to an index
+
+
+
+    GatewayResponseDefault4XX:
+      Type: AWS::ApiGateway::GatewayResponse
       Properties:
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.TODO_TABLE}
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
+
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
