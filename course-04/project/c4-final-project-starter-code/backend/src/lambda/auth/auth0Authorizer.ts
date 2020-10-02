@@ -21,7 +21,6 @@ export const handler = async (
     logger.info('Authorizing a user', event.authorizationToken)
     try {
         const jwtToken = await verifyToken(event.authorizationToken)
-        logger.info('User was authorized', jwtToken)
 
         return {
             principalId: jwtToken.sub,
@@ -38,6 +37,7 @@ export const handler = async (
         }
     } catch (e) {
         logger.error('User not authorized', {error: e.message})
+
 
         return {
             principalId: 'user',
@@ -59,12 +59,14 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
     const token = getToken(authHeader)
     const jwt: Jwt = decode(token, {complete: true}) as Jwt
 
+
     // DONE: Implement token verification
     // You should implement it similarly to how it was implemented for the exercise for the lesson 5
     // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
 
     const keys = await getKeys();
     const signKey = keys.find(key => key['kid'] == jwt.header.kid);
+
 
     return verify(
         token,
@@ -78,9 +80,7 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
 async function getKeys(): Promise<[]> {
     const body = (await Axios.get(jwksUrl)).data;
 
-    const response = JSON.parse(body);
-
-    return response.keys;
+    return body.keys;
 
 }
 

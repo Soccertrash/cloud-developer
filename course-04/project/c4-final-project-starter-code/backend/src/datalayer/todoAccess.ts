@@ -5,6 +5,10 @@ import {DocumentClient} from 'aws-sdk/clients/dynamodb'
 const XAWS = AWSXRay.captureAWS(AWS)
 
 import {TodoItem} from '../models/TodoItem'
+import {createLogger} from "../utils/logger";
+import {UpdateTodoRequest} from "../requests/UpdateTodoRequest";
+
+const logger = createLogger('datalayer');
 
 
 export class TodoAccess {
@@ -26,13 +30,52 @@ export class TodoAccess {
     }
 
     async createTodo(todo: TodoItem): Promise<TodoItem> {
+        logger.debug("CreateTodo", todo)
         await this.docClient.put({
             TableName: this.todoTable,
             Item: todo
         }).promise()
+        logger.debug("Done", todo)
 
         return todo
     }
+
+
+    async updateTodo(todoId: string, todo: UpdateTodoRequest) {
+        logger.debug(`UpdateTodo (${todoId})`, todo)
+
+        const result = await this.docClient.update(
+            {
+                TableName: this.todoTable,
+                Key: {"todoId": todoId},
+                UpdateExpression: "set name = :n, dueDate = :d, done = :o",
+                ExpressionAttributeValues: {
+                    ":n": todo.name,
+                    ":d": todo.dueDate,
+                    ":o": todo.done
+                },
+                ReturnValues: "UPDATED_NEW"
+
+            }
+        ).promise();
+
+        logger.debug(`UpdateResult (${result})`);
+    }
+
+    async deleteTodo(todoId: string) {
+        logger.debug(`Delete (${todoId}`)
+
+        const result = await this.docClient.delete(
+            {
+                TableName: this.todoTable,
+                Key: {"todoId": todoId}
+            }
+        ).promise();
+
+        logger.debug("delete", result)
+    }
+
+
 }
 
 function createDynamoDBClient() {
