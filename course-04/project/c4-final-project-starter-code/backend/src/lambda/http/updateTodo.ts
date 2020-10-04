@@ -17,13 +17,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     await todoAccess.updateTodo(todoId, updatedTodo)
 
     return {
-        statusCode: 200,
+        statusCode: 204,
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({
-            "test": "test"
-        })
+        body: ""
     }
 }

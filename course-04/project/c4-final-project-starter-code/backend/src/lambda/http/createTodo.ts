@@ -7,7 +7,7 @@ import {CreateTodoRequest} from '../../requests/CreateTodoRequest'
 import {TodoAccess} from "../../datalayer/todoAccess";
 import {createLogger} from "../../utils/logger";
 import {TodoItem} from "../../models/TodoItem";
-import {getUserId} from "../utils";
+import { getUserId } from '../utils';
 
 const todoAccess = new TodoAccess();
 const logger = createLogger('createTodo');
@@ -34,7 +34,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     }
 
-    const result = await todoAccess.createTodo(todoItem);
+    const item = await todoAccess.createTodo(todoItem);
 
     return {
         statusCode: 201,
@@ -43,7 +43,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             'Access-Control-Allow-Credentials': true
         },
         body: JSON.stringify({
-            result
+            item
         })
     }
 }
