@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
+import {APIGatewayProxyEvent} from "aws-lambda";
 import {parseUserId} from "../auth/utils";
 
 export function getUserId(event: APIGatewayProxyEvent) {

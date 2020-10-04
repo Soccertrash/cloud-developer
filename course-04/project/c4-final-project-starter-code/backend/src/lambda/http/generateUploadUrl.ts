@@ -5,7 +5,7 @@ import * as AWS from 'aws-sdk';
 import {createLogger} from "../../utils/logger";
 import * as uuid from 'uuid'
 import {TodoAccess} from '../../datalayer/todoAccess';
-import { getUserId } from '../../utils/user';
+import {getUserId} from '../../utils/user';
 
 const s3 = new AWS.S3({
     signatureVersion: 'v4'
