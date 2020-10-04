@@ -7,7 +7,7 @@ import {CreateTodoRequest} from '../../requests/CreateTodoRequest'
 import {TodoAccess} from "../../datalayer/todoAccess";
 import {createLogger} from "../../utils/logger";
 import {TodoItem} from "../../models/TodoItem";
-import { getUserId } from '../utils';
+import {getUserId} from '../utils';
 
 const todoAccess = new TodoAccess();
 const logger = createLogger('createTodo');

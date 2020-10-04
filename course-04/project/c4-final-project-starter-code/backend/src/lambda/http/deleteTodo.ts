@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 
-import {APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler} from 'aws-lambda'
+import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda'
 import {TodoAccess} from "../../datalayer/todoAccess";
 import {createLogger} from "../../utils/logger";
 
