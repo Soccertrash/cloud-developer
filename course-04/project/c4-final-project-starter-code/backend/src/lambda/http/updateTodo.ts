@@ -5,6 +5,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} fro
 import {UpdateTodoRequest} from '../../requests/UpdateTodoRequest'
 import {TodoAccess} from "../../datalayer/todoAccess";
 import {createLogger} from "../../utils/logger";
+import { getUserId } from '../../utils/user';
 
 const todoAccess = new TodoAccess();
 const logger = createLogger('updateTodo');
@@ -14,7 +15,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
 
     logger.debug(`updateTodo(${todoId})`)
-    await todoAccess.updateTodo(todoId, updatedTodo)
+
+    const userId = getUserId(event);
+
+    await todoAccess.updateTodo(todoId,userId, updatedTodo)
 
     return {
         statusCode: 204,

@@ -49,13 +49,13 @@ export class TodoAccess {
     }
 
 
-    async updateTodo(todoId: string, todo: UpdateTodoRequest) {
+    async updateTodo(todoId: string, userId: string, todo: UpdateTodoRequest) {
         logger.debug(`UpdateTodo (${todoId})`, todo)
 
         await this.docClient.update(
             {
                 TableName: this.todoTable,
-                Key: {"todoId": todoId},
+                Key: {"todoId": todoId, "userId": userId},
                 ExpressionAttributeNames: {"#nameAlt": "name"},
                 UpdateExpression: "set #nameAlt = :n, dueDate = :d, done = :o",
                 ExpressionAttributeValues: {
@@ -70,13 +70,13 @@ export class TodoAccess {
 
     }
 
-    async setUpdateUrl(todoId: string, url: string) {
+    async setUpdateUrl(todoId: string, userId: string, url: string) {
         logger.debug(`setUpdateUrl (${todoId}, ${url})`)
 
         await this.docClient.update(
             {
                 TableName: this.todoTable,
-                Key: {"todoId": todoId},
+                Key: {"todoId": todoId, "userId": userId},
                 UpdateExpression: "set attachmentUrl = :u",
                 ExpressionAttributeValues: {
                     ":u": url
@@ -88,13 +88,13 @@ export class TodoAccess {
 
     }
 
-    async deleteTodo(todoId: string) {
+    async deleteTodo(todoId: string, userId: string) {
         logger.debug(`Delete (${todoId}`)
 
         await this.docClient.delete(
             {
                 TableName: this.todoTable,
-                Key: {"todoId": todoId}
+                Key: {"todoId": todoId, "userId": userId}
             }
         ).promise();
 

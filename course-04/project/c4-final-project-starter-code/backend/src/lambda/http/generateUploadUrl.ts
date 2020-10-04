@@ -5,6 +5,7 @@ import * as AWS from 'aws-sdk';
 import {createLogger} from "../../utils/logger";
 import * as uuid from 'uuid'
 import {TodoAccess} from '../../datalayer/todoAccess';
+import { getUserId } from '../../utils/user';
 
 const s3 = new AWS.S3({
     signatureVersion: 'v4'
@@ -19,11 +20,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const todoId = event.pathParameters.todoId
     logger.debug("uploadUrl: " + todoId);
     const imageId = uuid.v4()
+    const userId = getUserId(event);
 
     const uploadUrl = getUploadUrl(imageId);
 
     const imageUrl = `https://${bucketName}.s3.amazonaws.com/${imageId}`
-    await todoAccess.setUpdateUrl(todoId, imageUrl);
+    await todoAccess.setUpdateUrl(todoId, userId, imageUrl);
 
     return {
         statusCode: 200,
