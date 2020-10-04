@@ -17,6 +17,7 @@ provider:
 
   environment:
     TODO_TABLE: Todo-${self:provider.stage}
+    TODO_USER_ID_INDEX: Todo-UID-IDX-${self:provider.stage}
     IMAGES_S3_BUCKET: todo-images-soccertrash-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
@@ -155,6 +156,13 @@ resources:
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODO_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODO_USER_ID_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
 
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
