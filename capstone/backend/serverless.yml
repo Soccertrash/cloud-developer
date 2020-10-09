@@ -27,6 +27,7 @@ provider:
 
   environment:
     TABLE_ALBUMS: Albums-${self:provider.stage}
+    TABLE_ALBUMS_SEC_INDEX: Albums-Sec-Idx-${self:provider.stage}
     TABLE_IMAGES: Images-${self:provider.stage}
     _X_AMZN_TRACE_ID: TRACE_LOCAL-${self:provider.stage}
 
@@ -97,6 +98,14 @@ functions:
             requestModels:
               'application/json': CreateAlbumRequest
 
+  DeleteAlbum:
+    handler: src/lambda/http/deleteAlbum.handler
+    events:
+      - http:
+          method: delete
+          path: album/{albumId}
+          #authorizer: Auth
+          #cors: true
 
 
 resources:
@@ -118,15 +127,26 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
+          - AttributeName: albumId
+            AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: createdAt
+          - AttributeName: albumId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TABLE_ALBUMS}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
     ImageTable:
       Type: AWS::DynamoDB::Table

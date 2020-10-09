@@ -16,7 +16,8 @@ export class AlbumAccess {
     constructor(
         private readonly docClient: DocumentClient = createDynamoDBClient(),
         private readonly tableAlbum = process.env.TABLE_ALBUMS,
-        private readonly tableimage = process.env.TABLE_IMAGES
+        private readonly tableimage = process.env.TABLE_IMAGES,
+        private readonly tableAlbumSecIdx = process.env.TABLE_ALBUMS_ID_INDEX
     ) {
     }
 
@@ -31,6 +32,7 @@ export class AlbumAccess {
             const result = await this.docClient
                 .query({
                     TableName: this.tableAlbum,
+                    IndexName: this.tableAlbumSecIdx,
                     KeyConditionExpression: 'userId = :userIdKey',
                     ExpressionAttributeValues: {
                         ':userIdKey': userId
@@ -74,6 +76,10 @@ export class AlbumAccess {
     }
 
 
+    /**
+     * Create a new album.
+     * @param album will be created.
+     */
     async createAlbum(album: Album): Promise<Album> {
         logger.debug("createAlbum", album)
         await this.docClient.put({
@@ -125,17 +131,19 @@ export class AlbumAccess {
     //
     // }
     //
-    // async deleteTodo(todoId: string, userId: string) {
-    //     logger.debug(`Delete (${todoId}`)
-    //
-    //     await this.docClient.delete(
-    //         {
-    //             TableName: this.todoTable,
-    //             Key: {"todoId": todoId, "userId": userId}
-    //         }
-    //     ).promise();
-    //
-    // }
+    async deleteAlbum(albumId: string, userId: string) {
+        logger.debug(`Delete (${albumId}`)
+
+        const deleteRes = await this.docClient.delete(
+            {
+                TableName: this.tableAlbum,
+                Key: {"userId": userId, "albumId": albumId},
+                ReturnValues: 'ALL_OLD'
+            }
+        ).promise();
+
+        logger.debug("Delete done", deleteRes);
+    }
 
 
 }
