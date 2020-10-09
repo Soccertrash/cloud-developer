@@ -1,0 +1,87 @@
+service:
+  name: serverless-photogallery-app
+
+plugins:
+  - serverless-webpack
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
+  - serverless-plugin-canary-deployments
+  - serverless-iam-roles-per-function
+  - serverless-dynamodb-local
+  - serverless-offline
+
+# Uncomment to enable individual packaging
+# package:
+#   individually: true
+
+provider:
+  name: aws
+  runtime: nodejs8.12
+
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-central-1'}
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
+  environment:
+    TABLE_ALBUMS: Albums-${self:provider.stage}
+
+
+custom:
+  serverless-offline:
+    port: 3003
+
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Photo gallery API
+        description: Serverless application for image storage
+#    models:
+#      - name: GroupRequest
+#        contentType: application/json
+#        schema: ${file(models/create-group-request.json)}
+#      - name: ImageRequest
+#        contentType: application/json
+#        schema: ${file(models/create-image-request.json)}
+
+functions:
+
+#  RS256Auth:
+#    handler: src/lambda/auth/rs256Auth0Authorizer.handler
+#
+#  Auth:
+#    handler: src/lambda/auth/auth0Authorizer.handler
+
+  GetGroups:
+    handler: src/lambda/http/getAlbums.handler
+    events:
+      - http:
+          method: get
+          path: albums
+          cors: true
+
+
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
+
+
