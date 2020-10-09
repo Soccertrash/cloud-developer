@@ -16,17 +16,20 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.12
+  runtime: nodejs12.x
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-central-1'}
-
-  tracing:
-    lambda: true
-    apiGateway: true
+#
+#  tracing:
+#    lambda: true
+#    apiGateway: true
 
   environment:
     TABLE_ALBUMS: Albums-${self:provider.stage}
+    TABLE_IMAGES: Images-${self:provider.stage}
+    _X_AMZN_TRACE_ID: TRACE_LOCAL-${self:provider.stage}
+
 
 
 custom:
@@ -34,6 +37,8 @@ custom:
     port: 3003
 
   dynamodb:
+    stages:
+      - ${self:provider.stage}
     start:
       port: 8000
       inMemory: true
@@ -45,10 +50,10 @@ custom:
         version: v1.0.0
         title: Photo gallery API
         description: Serverless application for image storage
-#    models:
-#      - name: GroupRequest
-#        contentType: application/json
-#        schema: ${file(models/create-group-request.json)}
+    models:
+      - name: CreateAlbumRequest
+        contentType: application/json
+        schema: ${file(models/create-album-request.json)}
 #      - name: ImageRequest
 #        contentType: application/json
 #        schema: ${file(models/create-image-request.json)}
@@ -61,13 +66,36 @@ functions:
 #  Auth:
 #    handler: src/lambda/auth/auth0Authorizer.handler
 
-  GetGroups:
+  GetAlbums:
     handler: src/lambda/http/getAlbums.handler
     events:
       - http:
           method: get
-          path: albums
+          path: album
           cors: true
+
+  GetSingleAlbum:
+    handler: src/lambda/http/getSingleAlbum.handler
+    events:
+      - http:
+          method: get
+          path: album/{albumId}
+          cors: true
+
+  CreateAlbum:
+    handler: src/lambda/http/createAlbum.handler
+    events:
+      - http:
+          method: put
+          path: album
+          #authorizer: Auth
+          #cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create an album
+            description: Create an album
+            requestModels:
+              'application/json': CreateAlbumRequest
 
 
 
@@ -83,5 +111,37 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi
+
+    AlbumTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TABLE_ALBUMS}
+
+    ImageTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: albumIdUserId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: albumIdUserId
+            KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TABLE_IMAGES}
 
 

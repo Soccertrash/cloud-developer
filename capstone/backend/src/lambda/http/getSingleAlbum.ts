@@ -3,22 +3,18 @@ import 'source-map-support/register'
 import * as express from 'express'
 import * as awsServerlessExpress from 'aws-serverless-express'
 import {createLogger} from "../../utils/logger";
-import {AlbumAccess} from "../../datalayer/albumAccess";
-import {userId} from "../../utils/dummy";
 
 const app = express()
 
-const logger = createLogger("getAlbums");
+const logger = createLogger("getSingleAlbum");
 
-const albumAccess = new AlbumAccess();
+app.get('/album/:albumId', async (_req, res) => {
+    const albumId = _req.params.albumId;
 
-app.get('/album', async (_req, res) => {
-    logger.info("getAlbums");
-
-    const albums = await albumAccess.getAllAlbums(userId);
+    logger.info(`AlbumdId ${albumId}`);
 
     res.json({
-        items: albums
+        items: []
     })
 })
 

@@ -1,7 +1,7 @@
-export interface Group {
-  id: string
+export interface Album {
+  albumId: string
   name: string
-  description: string
+  description?: string
   userId: string
-  timestamp: string
+  createdAt: string
 }
