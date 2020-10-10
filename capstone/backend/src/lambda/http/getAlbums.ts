@@ -4,7 +4,7 @@ import * as express from 'express'
 import * as awsServerlessExpress from 'aws-serverless-express'
 import {createLogger} from "../../utils/logger";
 import {AlbumAccess} from "../../datalayer/albumAccess";
-import {userId} from "../../utils/dummy";
+import {getUserId} from "../../utils/getUserId";
 
 const app = express()
 
@@ -15,7 +15,7 @@ const albumAccess = new AlbumAccess();
 app.get('/album', async (_req, res) => {
     logger.info("getAlbums");
 
-    const albums = await albumAccess.getAllAlbums(userId);
+    const albums = await albumAccess.getAllAlbums(getUserId(_req));
 
     res.json({
         items: albums

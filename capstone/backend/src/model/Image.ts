@@ -1,10 +1,9 @@
 export interface Image {
+    userAlbumId: string
     imageId: string
-    albumId: string
-    name: string
-    userId: string
-    timestamp: string
+    createdAt: string
     description?: string
+    url: string
     geoPosition?: {
         lat: number,
         lng: number,

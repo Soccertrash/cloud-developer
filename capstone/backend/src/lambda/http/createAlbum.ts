@@ -4,10 +4,10 @@ import * as express from 'express'
 import * as awsServerlessExpress from 'aws-serverless-express'
 import {createLogger} from "../../utils/logger";
 import {AlbumAccess} from "../../datalayer/albumAccess";
-import {userId} from "../../utils/dummy";
 import {CreateAlbumRequest} from "../../requests/CreateAlbumRequest";
 import {Album} from "../../model/Album";
 import * as uuid from 'uuid'
+import {getUserId} from "../../utils/getUserId";
 
 
 const bodyParser = require('body-parser')
@@ -24,11 +24,13 @@ app.put('/album', jsonParser, async (_req, res) => {
     logger.info("createAlbum", newAlbum);
     const albumId = uuid.v4();
 
+    const userId: string = getUserId(_req);
+
     const albumData: Album = {
         name: newAlbum.name,
         description: newAlbum.description,
         albumId: albumId,
-        userId: userId,
+        userId,
         createdAt: new Date().toISOString()
     }
 

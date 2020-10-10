@@ -4,7 +4,7 @@ import * as express from 'express'
 import * as awsServerlessExpress from 'aws-serverless-express'
 import {createLogger} from "../../utils/logger";
 import {AlbumAccess} from "../../datalayer/albumAccess";
-import {userId} from "../../utils/dummy";
+import {getUserId} from "../../utils/getUserId";
 
 const app = express()
 
@@ -15,7 +15,7 @@ app.delete('/album/:albumId', async (_req, res) => {
     logger.info(`AlbumdId ${albumId}`);
 
     const albumAccess = new AlbumAccess();
-    await albumAccess.deleteAlbum(albumId, userId);
+    await albumAccess.deleteAlbum(albumId, getUserId(_req));
 
     res.status(201).send('');
 })

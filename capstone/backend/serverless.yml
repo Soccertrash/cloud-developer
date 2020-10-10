@@ -29,6 +29,9 @@ provider:
     TABLE_ALBUMS: Albums-${self:provider.stage}
     TABLE_ALBUMS_SEC_INDEX: Albums-Sec-Idx-${self:provider.stage}
     TABLE_IMAGES: Images-${self:provider.stage}
+    TABLE_IMAGES_SEC_INDEX: Images-Sec-Idx-${self:provider.stage}
+    IMAGES_S3_BUCKET: gallery-soccertrash-${self:provider.stage}
+    SIGNED_URL_EXPIRATION: 300
     _X_AMZN_TRACE_ID: TRACE_LOCAL-${self:provider.stage}
 
 
@@ -152,16 +155,27 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: albumIdUserId
+          - AttributeName: userAlbumId
+            AttributeType: S
+          - AttributeName: imageId
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
         KeySchema:
-          - AttributeName: albumIdUserId
+          - AttributeName: userAlbumId
             KeyType: HASH
-          - AttributeName: createdAt
+          - AttributeName: imageId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TABLE_IMAGES}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TABLE_IMAGES_SEC_INDEX}
+            KeySchema:
+              - AttributeName: userAlbumId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
 

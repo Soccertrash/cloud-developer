@@ -1,7 +1,8 @@
 import * as AWS from 'aws-sdk'
 import {DocumentClient} from 'aws-sdk/clients/dynamodb'
 import {createLogger} from "../utils/logger";
-import {Album} from "../model/Album";
+import {Image} from "../model/Image";
+import {getUserAlbumId} from "../utils/getUserAlbumId";
 
 const AWSXRay = require('aws-xray-sdk')
 
@@ -10,82 +11,55 @@ const XAWS = AWSXRay.captureAWS(AWS)
 
 const logger = createLogger('datalayer');
 
-export class AlbumAccess {
+export class ImageAccess {
 
     constructor(
         private readonly docClient: DocumentClient = createDynamoDBClient(),
-        private readonly tableAlbum = process.env.TABLE_ALBUMS,
-        private readonly tableAlbumSecIdx = process.env.TABLE_ALBUMS_ID_INDEX
+        private readonly tableimage = process.env.TABLE_IMAGES,
+        private readonly tableImageSecIdx = process.env.TABLE_IMAGES_SEC_INDEX
     ) {
     }
 
+
     /**
-     * Get all album information for a specific user id
-     * @param userId key for request all album information
-     * @return list of album for the given userId
+     * Create a new Image.
+     * @param Image will be created.
      */
-    async getAllAlbums(userId: string): Promise<Album[]> {
-        logger.debug(`Get all albums for user ${userId}`);
+    async createImage(image: Image): Promise<Image> {
+        logger.debug("createImage", image)
+        await this.docClient.put({
+            TableName: this.tableimage,
+            Item: image
+        }).promise()
+
+        return image
+    }
+
+    /**
+     * Get all images for a album (and user)
+     * @param userId id of user
+     * @param albumId id of album
+     */
+    async getAllAlbums(userId: string, albumId: string): Promise<Image[]> {
+        logger.debug(`Get all images for user ${userId} and album ${albumId}`);
+        const key = getUserAlbumId(userId, albumId);
         try {
             const result = await this.docClient
                 .query({
-                    TableName: this.tableAlbum,
-                    IndexName: this.tableAlbumSecIdx,
-                    KeyConditionExpression: 'userId = :userIdKey',
+                    TableName: this.tableimage,
+                    IndexName: this.tableImageSecIdx,
+                    KeyConditionExpression: 'userAlbumId = :userAlbumIdKey',
                     ExpressionAttributeValues: {
-                        ':userIdKey': userId
+                        ':userAlbumIdKey': key
                     }
                 })
                 .promise()
 
             const items = result.Items
-            return items as Album[]
+            return items as Image[]
         } catch (e) {
             logger.error("Could not get all album", e);
         }
-    }
-
-
-    // /**
-    //  * Get all images for given user and album.
-    //  * @param userId
-    //  * @param albumId
-    //  * @return list of images of a given album
-    //  */
-    // async getAllImages(userId: string, albumId: string): Promise<Image[]> {
-    //     logger.debug(`Get all images for user ${userId} and album ${albumId}`);
-    //
-    //     try {
-    //         const result = await this.docClient
-    //             .query({
-    //                 TableName: this.tableimage,
-    //                 KeyConditionExpression: 'albumIdUserId = :albumIdUserId',
-    //                 ExpressionAttributeValues: {
-    //                     ':albumIdUserId': albumId + userId
-    //                 }
-    //             })
-    //             .promise();
-    //         const items = result.Items;
-    //         return items as Image[]
-    //     } catch (e) {
-    //         logger.error("Could not get album", e);
-    //     }
-    //
-    // }
-
-
-    /**
-     * Create a new album.
-     * @param album will be created.
-     */
-    async createAlbum(album: Album): Promise<Album> {
-        logger.debug("createAlbum", album)
-        await this.docClient.put({
-            TableName: this.tableAlbum,
-            Item: album
-        }).promise()
-
-        return album
     }
 
     //
@@ -129,19 +103,14 @@ export class AlbumAccess {
     //
     // }
     //
-    /**
-     * Delete an album of a user
-     * @param albumId the id of the album
-     * @param userId the user id
-     *
-     */
-    async deleteAlbum(albumId: string, userId: string) {
-        logger.debug(`Delete (${albumId}`)
+    async deleteimage(userId: string, albumId: string, imageId: string) {
+        const userAlbumId = getUserAlbumId(userId, albumId);
+        logger.debug(`Delete Image (${userAlbumId},${imageId})`)
 
         const deleteRes = await this.docClient.delete(
             {
-                TableName: this.tableAlbum,
-                Key: {"userId": userId, "albumId": albumId},
+                TableName: this.tableimage,
+                Key: {"userAlbumId": userAlbumId, "imageId": imageId},
                 ReturnValues: 'ALL_OLD'
             }
         ).promise();
