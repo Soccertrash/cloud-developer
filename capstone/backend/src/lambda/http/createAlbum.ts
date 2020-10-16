@@ -35,8 +35,10 @@ app.put('/album', jsonParser, async (_req, res) => {
     }
 
     await albumAccess.createAlbum(albumData);
-
-    res.status(201).send('');
+    delete albumData.userId
+    res.json({
+        item: albumData
+    })
 })
 
 const server = awsServerlessExpress.createServer(app)

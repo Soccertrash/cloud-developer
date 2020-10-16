@@ -18,7 +18,10 @@ app.get('/album', async (_req, res) => {
     const albums = await albumAccess.getAllAlbums(getUserId(_req));
 
     res.json({
-        items: albums
+        items: albums.map(a => {
+            delete a.userId;
+            return a
+        })
     })
 })
 
