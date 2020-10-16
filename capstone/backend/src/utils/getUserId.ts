@@ -1,4 +1,9 @@
+import {parseUserId} from "../auth/utils";
 
 export function getUserId(_req) : string{
-    return "1";
+    const authorization = _req.headers.authorization
+    const split = authorization.split(' ')
+    const jwtToken = split[1]
+
+    return parseUserId(jwtToken)
 }

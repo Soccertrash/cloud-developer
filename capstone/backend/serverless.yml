@@ -38,7 +38,7 @@ provider:
 
 custom:
   serverless-offline:
-    port: 3003
+    httpPort: 3003
 
   dynamodb:
     stages:
@@ -64,11 +64,8 @@ custom:
 
 functions:
 
-#  RS256Auth:
-#    handler: src/lambda/auth/rs256Auth0Authorizer.handler
-#
-#  Auth:
-#    handler: src/lambda/auth/auth0Authorizer.handler
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
 
   GetAlbums:
     handler: src/lambda/http/getAlbums.handler
@@ -76,6 +73,7 @@ functions:
       - http:
           method: get
           path: album
+          authorizer: Auth
           cors: true
 
   GetSingleAlbum:
@@ -84,6 +82,7 @@ functions:
       - http:
           method: get
           path: album/{albumId}
+          authorizer: Auth
           cors: true
 
   CreateAlbum:
@@ -92,8 +91,8 @@ functions:
       - http:
           method: put
           path: album
-          #authorizer: Auth
-          #cors: true
+          authorizer: Auth
+          cors: true
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Create an album
@@ -107,8 +106,27 @@ functions:
       - http:
           method: delete
           path: album/{albumId}
-          #authorizer: Auth
-          #cors: true
+          authorizer: Auth
+          cors: true
+
+  GenUploadUrl:
+    handler: src/lambda/http/requestUploadUrlImage.handler
+    events:
+      - http:
+          method: post
+          path: /album/{albumId}/image
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:*
+        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}
+
 
 
 resources:
