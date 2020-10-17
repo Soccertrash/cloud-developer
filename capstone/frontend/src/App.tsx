@@ -97,7 +97,7 @@ export default class App extends Component<AppProps, AppState> {
         />
 
         <Route
-          path="/album/:todoId/edit"
+          path="/album/:albumId/edit"
           exact
           render={props => {
             return <EditAlbum {...props} auth={this.props.auth} />

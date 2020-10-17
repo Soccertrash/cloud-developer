@@ -59,7 +59,7 @@ export async function getUploadUrl(
   idToken: string,
   albumId: string
 ): Promise<string> {
-  const response = await Axios.post(`${apiEndpoint}/album/${albumId}/attachment`, '', {
+  const response = await Axios.post(`${apiEndpoint}/album/${albumId}/image`, '', {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
@@ -68,6 +68,6 @@ export async function getUploadUrl(
   return response.data.uploadUrl
 }
 
-export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void> {
+export async function uploadFile(uploadUrl: string, file: File): Promise<void> {
   await Axios.put(uploadUrl, file)
 }
