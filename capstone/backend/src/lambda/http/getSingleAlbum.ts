@@ -16,7 +16,7 @@ app.get('/album/:albumId', async (_req, res) => {
 
     logger.info(`AlbumdId ${albumId}`);
 
-    const images = await imageAccess.getAllAlbums(getUserId(_req), albumId);
+    const images = await imageAccess.getAllImages(getUserId(_req), albumId);
 
     res.json({
         items: images

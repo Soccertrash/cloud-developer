@@ -40,7 +40,7 @@ export class ImageAccess {
      * @param userId id of user
      * @param albumId id of album
      */
-    async getAllAlbums(userId: string, albumId: string): Promise<Image[]> {
+    async getAllImages(userId: string, albumId: string): Promise<Image[]> {
         logger.debug(`Get all images for user ${userId} and album ${albumId}`);
         const key = getUserAlbumId(userId, albumId);
         try {
