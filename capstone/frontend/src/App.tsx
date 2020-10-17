@@ -3,7 +3,7 @@ import { Link, Route, Router, Switch } from 'react-router-dom'
 import { Grid, Menu, Segment } from 'semantic-ui-react'
 
 import Auth from './auth/Auth'
-import { EditTodo } from './components/EditTodo'
+import { EditAlbum } from './components/EditAlbum'
 import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Albums } from './components/Albums'
@@ -97,10 +97,10 @@ export default class App extends Component<AppProps, AppState> {
         />
 
         <Route
-          path="/todos/:todoId/edit"
+          path="/album/:todoId/edit"
           exact
           render={props => {
-            return <EditTodo {...props} auth={this.props.auth} />
+            return <EditAlbum {...props} auth={this.props.auth} />
           }}
         />
 
