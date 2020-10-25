@@ -41,37 +41,9 @@ export class AlbumAccess {
             const items = result.Items
             return items as Album[]
         } catch (e) {
-            logger.error("Could not get all album", e);
+            logger.error("Could not get all albums.", e);
         }
     }
-
-
-    // /**
-    //  * Get all images for given user and album.
-    //  * @param userId
-    //  * @param albumId
-    //  * @return list of images of a given album
-    //  */
-    // async getAllImages(userId: string, albumId: string): Promise<Image[]> {
-    //     logger.debug(`Get all images for user ${userId} and album ${albumId}`);
-    //
-    //     try {
-    //         const result = await this.docClient
-    //             .query({
-    //                 TableName: this.tableimage,
-    //                 KeyConditionExpression: 'albumIdUserId = :albumIdUserId',
-    //                 ExpressionAttributeValues: {
-    //                     ':albumIdUserId': albumId + userId
-    //                 }
-    //             })
-    //             .promise();
-    //         const items = result.Items;
-    //         return items as Image[]
-    //     } catch (e) {
-    //         logger.error("Could not get album", e);
-    //     }
-    //
-    // }
 
 
     /**
@@ -88,47 +60,6 @@ export class AlbumAccess {
         return album
     }
 
-    //
-    //
-    // async updateTodo(todoId: string, userId: string, todo: UpdateTodoRequest) {
-    //     logger.debug(`UpdateTodo (${todoId})`, todo)
-    //
-    //     await this.docClient.update(
-    //         {
-    //             TableName: this.todoTable,
-    //             Key: {"todoId": todoId, "userId": userId},
-    //             ExpressionAttributeNames: {"#nameAlt": "name"},
-    //             UpdateExpression: "set #nameAlt = :n, dueDate = :d, done = :o",
-    //             ExpressionAttributeValues: {
-    //                 ":n": todo.name,
-    //                 ":d": todo.dueDate,
-    //                 ":o": todo.done
-    //             },
-    //             ReturnValues: "UPDATED_NEW"
-    //
-    //         }
-    //     ).promise();
-    //
-    // }
-    //
-    // async setUpdateUrl(todoId: string, userId: string, url: string) {
-    //     logger.debug(`setUpdateUrl (${todoId}, ${url})`)
-    //
-    //     await this.docClient.update(
-    //         {
-    //             TableName: this.todoTable,
-    //             Key: {"todoId": todoId, "userId": userId},
-    //             UpdateExpression: "set attachmentUrl = :u",
-    //             ExpressionAttributeValues: {
-    //                 ":u": url
-    //             },
-    //             ReturnValues: "UPDATED_NEW"
-    //
-    //         }
-    //     ).promise();
-    //
-    // }
-    //
     /**
      * Delete an album of a user
      * @param albumId the id of the album

@@ -62,48 +62,14 @@ export class ImageAccess {
         }
     }
 
-    //
-    //
-    // async updateTodo(todoId: string, userId: string, todo: UpdateTodoRequest) {
-    //     logger.debug(`UpdateTodo (${todoId})`, todo)
-    //
-    //     await this.docClient.update(
-    //         {
-    //             TableName: this.todoTable,
-    //             Key: {"todoId": todoId, "userId": userId},
-    //             ExpressionAttributeNames: {"#nameAlt": "name"},
-    //             UpdateExpression: "set #nameAlt = :n, dueDate = :d, done = :o",
-    //             ExpressionAttributeValues: {
-    //                 ":n": todo.name,
-    //                 ":d": todo.dueDate,
-    //                 ":o": todo.done
-    //             },
-    //             ReturnValues: "UPDATED_NEW"
-    //
-    //         }
-    //     ).promise();
-    //
-    // }
-    //
-    // async setUpdateUrl(todoId: string, userId: string, url: string) {
-    //     logger.debug(`setUpdateUrl (${todoId}, ${url})`)
-    //
-    //     await this.docClient.update(
-    //         {
-    //             TableName: this.todoTable,
-    //             Key: {"todoId": todoId, "userId": userId},
-    //             UpdateExpression: "set attachmentUrl = :u",
-    //             ExpressionAttributeValues: {
-    //                 ":u": url
-    //             },
-    //             ReturnValues: "UPDATED_NEW"
-    //
-    //         }
-    //     ).promise();
-    //
-    // }
-    //
-    async deleteimage(userId: string, albumId: string, imageId: string) {
+
+    /**
+     * Delete a certain imange
+     * @param userId the ID of the user
+     * @param albumId the ID of the album
+     * @param imageId the ID of the image
+     */
+    async deleteimage(userId: string, albumId: string, imageId: string): Promise<Image[]> {
         const userAlbumId = getUserAlbumId(userId, albumId);
         logger.debug(`Delete Image (${userAlbumId},${imageId})`)
 
@@ -116,6 +82,7 @@ export class ImageAccess {
         ).promise();
 
         logger.debug("Delete done", deleteRes);
+        return deleteRes.Attributes as Image[]
     }
 
 

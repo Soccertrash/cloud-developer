@@ -1,5 +1,5 @@
 service:
-  name: serverless-photogallery-app
+  name: serverless-gallery
 
 plugins:
   - serverless-webpack
@@ -20,10 +20,10 @@ provider:
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-central-1'}
-#
-#  tracing:
-#    lambda: true
-#    apiGateway: true
+
+  #  tracing:
+  #    lambda: true
+  #    apiGateway: true
 
   environment:
     TABLE_ALBUMS: Albums-${self:provider.stage}
@@ -32,8 +32,6 @@ provider:
     TABLE_IMAGES_SEC_INDEX: Images-Sec-Idx-${self:provider.stage}
     IMAGES_S3_BUCKET: gallery-soccertrash-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    _X_AMZN_TRACE_ID: TRACE_LOCAL-${self:provider.stage}
-
 
 
 custom:
@@ -58,9 +56,6 @@ custom:
       - name: CreateAlbumRequest
         contentType: application/json
         schema: ${file(models/create-album-request.json)}
-#      - name: ImageRequest
-#        contentType: application/json
-#        schema: ${file(models/create-image-request.json)}
 
 functions:
 
@@ -75,6 +70,18 @@ functions:
           path: album
           authorizer: Auth
           cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+
 
   GetSingleAlbum:
     handler: src/lambda/http/getSingleAlbum.handler
@@ -84,6 +91,19 @@ functions:
           path: album/{albumId}
           authorizer: Auth
           cors: true
+
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+
 
   CreateAlbum:
     handler: src/lambda/http/createAlbum.handler
@@ -99,6 +119,17 @@ functions:
             description: Create an album
             requestModels:
               'application/json': CreateAlbumRequest
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
 
   DeleteAlbum:
     handler: src/lambda/http/deleteAlbum.handler
@@ -108,6 +139,18 @@ functions:
           path: album/{albumId}
           authorizer: Auth
           cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+
 
   GenUploadUrl:
     handler: src/lambda/http/requestUploadUrlImage.handler
@@ -127,6 +170,23 @@ functions:
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}
 
+  DeleteImage:
+    handler: src/lambda/http/deleteImage.handler
+    events:
+      - http:
+          method: post
+          path: /album/{albumId}/image/{imageId}
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:*
+        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}
 
 
 resources:
@@ -196,4 +256,44 @@ resources:
             Projection:
               ProjectionType: ALL
 
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
+    ImagesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.IMAGES_S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:*'
+              Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
+        Bucket: !Ref ImagesBucket
 
