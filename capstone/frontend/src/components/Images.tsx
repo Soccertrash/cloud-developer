@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Button, Grid, Header, Icon, Image as ImageUi, Loader} from 'semantic-ui-react'
+import {Button, Card, Grid, Header, Icon, Image as UiImage, Loader, Modal} from 'semantic-ui-react'
 import Auth from '../auth/Auth'
 import {Image} from "../types/Image";
 import {deleteImage, getImages} from "../api/image-api";
@@ -17,13 +17,15 @@ interface ImagesState {
     images: Image[]
     loadingImages: boolean
     deletingImage: string
+    modalOpen: boolean
 }
 
 export class Images extends React.PureComponent<ImagesProps, ImagesState> {
     state: ImagesState = {
         images: [],
         loadingImages: true,
-        deletingImage: ""
+        deletingImage: "",
+        modalOpen: false
     }
 
 
@@ -89,37 +91,41 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
     renderImageTable() {
 
         let resultArray: Array<JSX.Element> = []
-        let columns: Array<JSX.Element> = []
-
         this.state.images.forEach((img, idx) => {
 
-            columns.push(
-                <Grid.Column verticalAlign="middle" key={img.imageId} width={4}>
-                    <ImageUi src={img.url} size="small" wrapped/><br/>
-                    <Button size='mini' onClick={() => this.onImageDelete(img.imageId)} icon>
-                        <Icon name="trash alternate outline" loading={this.state.deletingImage == img.imageId}/>
-                    </Button>
-                </Grid.Column>
+            resultArray.push(
+                <Card>
+                    <Card.Content>
+                        <Modal
+                            size='large'
+                            closeIcon
+                            trigger={<UiImage src={img.url} fluid rounded/>}
+                            onClose={() => this.setState({
+                                modalOpen: false
+                            })}
+                            onOpen={() => this.setState({
+                                modalOpen: true
+                            })}
+                            open={this.state.modalOpen}
+                        >
+                            <Modal.Content image>
+                                <UiImage src={img.url} wrapped/>
+                            </Modal.Content>
+
+                        </Modal>
+                    </Card.Content>
+                    <Card.Content extra>
+                        <Button size='mini' onClick={() => this.onImageDelete(img.imageId)} icon>
+                            <Icon name="trash alternate outline" loading={this.state.deletingImage == img.imageId}/>
+                        </Button>
+                    </Card.Content>
+                </Card>
             )
-            if ((idx + 1) % 5 == 0) {
-                resultArray.push(
-                    <Grid.Row>
-                        {columns}
-                    </Grid.Row>
-                )
-                columns = []
-            }
 
         })
-        if (columns.length > 0) {
-            resultArray.push(
-                <Grid.Row>
-                    {columns}
-                </Grid.Row>
-            )
-        }
 
-        return (<Grid padded>{resultArray} </Grid>);
+
+        return (<Card.Group itemsPerRow={5}>{resultArray} </Card.Group>);
     }
 
 }

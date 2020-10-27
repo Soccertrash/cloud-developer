@@ -17,6 +17,7 @@ interface AlbumsState {
     newAlbumName: string
     newAlbumDesc: string
     loadingAlbums: boolean
+    albumNameError: boolean
 }
 
 export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
@@ -24,11 +25,12 @@ export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
         albums: [],
         newAlbumName: '',
         newAlbumDesc: '',
-        loadingAlbums: true
+        loadingAlbums: true,
+        albumNameError: false
     }
 
     handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({newAlbumName: event.target.value})
+        this.setState({newAlbumName: event.target.value, albumNameError: event.target.value === ''})
     }
 
     handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,11 +105,11 @@ export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
 
                 <Form.Field required>
                     <label>Album Name:</label>
-                    <input placeholder="Album name" onChange={this.handleNameChange} value={this.state.newAlbumName}/>
+                    <Form.Input placeholder="Album name" onChange={this.handleNameChange} value={this.state.newAlbumName} error={this.state.albumNameError}/>
                 </Form.Field>
                 <Form.Field>
                     <label>Album Description:</label>
-                    <input placeholder="Album description" onChange={this.handleDescriptionChange}
+                    <Form.Input placeholder="Album description" onChange={this.handleDescriptionChange}
                            value={this.state.newAlbumDesc}/>
                 </Form.Field>
                 <Button type='submit' color="teal">Create Album</Button>
