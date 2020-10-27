@@ -31,10 +31,13 @@ provider:
     TABLE_IMAGES: Images-${self:provider.stage}
     TABLE_IMAGES_SEC_INDEX: Images-Sec-Idx-${self:provider.stage}
     IMAGES_S3_BUCKET: gallery-soccertrash-${self:provider.stage}
+    THUMBNAILS_S3_BUCKET: gallery-soccertrash-tn-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
 
+
 custom:
+  topicName: imagesTopic-${self:provider.stage}
   serverless-offline:
     httpPort: 3003
 
@@ -161,9 +164,25 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
+          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}/index/${self:provider.environment.TABLE_IMAGES_SEC_INDEX}
 
-
+#  ResizeImage:
+#    handler: src/lambda/s3/resizeImage.handler
+#    events:
+#      - sns:
+#          arn:
+#            Fn::Join:
+#              - ':'
+#              - - arn:aws:sns
+#                - Ref: AWS::Region
+#                - Ref: AWS::AccountId
+#                - ${self:custom.topicName}
+#          topicName: ${self:custom.topicName}
 
   GenUploadUrl:
     handler: src/lambda/http/requestUploadUrlImage.handler

@@ -63,7 +63,7 @@ export class ImageAccess {
             const items = result.Items
             return items as Image[]
         } catch (e) {
-            logger.error("Could not get all album", e);
+            logger.error("Could not get all images.", e);
         }
     }
 
@@ -75,20 +75,24 @@ export class ImageAccess {
      * @param imageId the ID of the image
      */
     async deleteimage(userId: string, albumId: string, imageId: string) {
-        const userAlbumId = getUserAlbumId(userId, albumId);
-        logger.debug(`Delete Image (${userAlbumId},${imageId})`)
+        try {
+            const userAlbumId = getUserAlbumId(userId, albumId);
+            logger.debug(`Delete Image (${userAlbumId},${imageId})`)
 
-        const deleteRes = await this.docClient.delete(
-            {
-                TableName: this.tableimage,
-                Key: {"userAlbumId": userAlbumId, "imageId": imageId},
-                ReturnValues: 'ALL_OLD'
-            }
-        ).promise();
+            const deleteRes = await this.docClient.delete(
+                {
+                    TableName: this.tableimage,
+                    Key: {"userAlbumId": userAlbumId, "imageId": imageId},
+                    ReturnValues: 'ALL_OLD'
+                }
+            ).promise();
 
-        logger.debug("Delete from dynamodb done", deleteRes);
-        await removeFromS3Bucket(imageId)
-        logger.debug("Delete from s3 done");
+            logger.debug("Removal of image from dynamodb done", deleteRes);
+            await removeFromS3Bucket(imageId)
+            logger.debug("Removal of image from s3 done");
+        } catch (e) {
+            logger.error("Could not delete given image", e)
+        }
 
     }
 
@@ -109,7 +113,7 @@ function createDynamoDBClient() {
 
 
 async function removeFromS3Bucket(imageId: string) {
-
+    logger.debug("Remove from s3", imageId)
     await new Promise((resolve, reject) => {
             s3.deleteObject({
                 Bucket: bucketName,
@@ -119,6 +123,8 @@ async function removeFromS3Bucket(imageId: string) {
                     logger.error(`Could not delete image ${imageId} from S3`);
                     return reject(err);
                 }
+                logger.debug("Remove from s3 done", imageId)
+
                 return resolve(data);
             })
         }

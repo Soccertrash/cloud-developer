@@ -24,7 +24,15 @@ app.delete('/album/:albumId', async (_req, res) => {
     await albumAccess.deleteAlbum(albumId, userid);
 
     const allImages = await imageAccess.getAllImages(userid, albumId);
-    allImages.forEach(i => imageAccess.deleteimage(userid, albumId, i.imageId))
+    if (allImages !== undefined) {
+        for (let i = 0; i < allImages.length; i++) {
+            const imageId = allImages[i].imageId;
+            await imageAccess.deleteimage(userid, albumId, imageId)
+            logger.debug(`Delete image with ID ${imageId}`)
+        }
+    } else {
+        logger.warn("AllImages was undefined")
+    }
 
     res.status(201).send('');
 })
