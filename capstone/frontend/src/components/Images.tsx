@@ -17,7 +17,7 @@ interface ImagesState {
     images: Image[]
     loadingImages: boolean
     deletingImage: string
-    modalOpen: boolean
+    modalOpen: number
 }
 
 export class Images extends React.PureComponent<ImagesProps, ImagesState> {
@@ -25,7 +25,7 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
         images: [],
         loadingImages: true,
         deletingImage: "",
-        modalOpen: false
+        modalOpen: -1
     }
 
 
@@ -94,19 +94,20 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
         this.state.images.forEach((img, idx) => {
 
             resultArray.push(
-                <Card>
+                <Card key={img.imageId}>
                     <Card.Content>
                         <Modal
+                            key={idx}
                             size='large'
                             closeIcon
                             trigger={<UiImage src={img.url} fluid rounded/>}
                             onClose={() => this.setState({
-                                modalOpen: false
+                                modalOpen: -1
                             })}
                             onOpen={() => this.setState({
-                                modalOpen: true
+                                modalOpen: idx
                             })}
-                            open={this.state.modalOpen}
+                            open={this.state.modalOpen == idx}
                         >
                             <Modal.Content image>
                                 <UiImage src={img.url} wrapped/>
