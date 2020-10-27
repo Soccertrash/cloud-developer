@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Button, Form} from 'semantic-ui-react'
+import {Button, Form, Label} from 'semantic-ui-react'
 import Auth from '../auth/Auth'
 import {getUploadUrl, uploadFile} from '../api/album-api'
 
@@ -21,13 +21,19 @@ interface UploadImagesProps {
 interface EditTodoState {
     files: Array<File>
     uploadState: UploadState
+    error: string
+    uploadedFiles: number
+    done: boolean
 }
 
 export class EditAlbum extends React.PureComponent<UploadImagesProps,
     EditTodoState> {
     state: EditTodoState = {
         files: [],
-        uploadState: UploadState.NoUpload
+        uploadState: UploadState.NoUpload,
+        error: "",
+        uploadedFiles: 0,
+        done: false
     }
 
     handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,29 +48,31 @@ export class EditAlbum extends React.PureComponent<UploadImagesProps,
 
     handleSubmit = async (event: React.SyntheticEvent) => {
         event.preventDefault()
+        this.state.error = ""
+        this.state.done = false
 
         try {
             if (!this.state.files) {
-                alert('File should be selected')
+                this.state.error = "No file was selected"
                 return
             }
 
+            this.state.uploadedFiles = 0
 
             for (const f of this.state.files) {
                 this.setUploadState(UploadState.FetchingPresignedUrl)
 
                 // Create Image
-
                 const uploadUrl = await getUploadUrl(this.props.auth.getIdToken(), this.props.match.params.albumId)
 
                 this.setUploadState(UploadState.UploadingFile)
                 await uploadFile(uploadUrl, f)
-
-                alert('File was uploaded!' )
+                this.state.uploadedFiles++
             }
+            this.state.done = true
 
         } catch (e) {
-            alert('Could not upload a file: ' + e.message)
+            this.state.error = 'Could not upload a file: ' + e.message
         } finally {
             this.setUploadState(UploadState.NoUpload)
         }
@@ -104,13 +112,17 @@ export class EditAlbum extends React.PureComponent<UploadImagesProps,
         return (
             <div>
                 {this.state.uploadState === UploadState.FetchingPresignedUrl && <p>Uploading image metadata</p>}
-                {this.state.uploadState === UploadState.UploadingFile && <p>Uploading file</p>}
+                {this.state.uploadState === UploadState.UploadingFile &&
+                <p>Uploading file {this.state.uploadedFiles}/{this.state.files.length}</p>}
                 <Button
                     loading={this.state.uploadState !== UploadState.NoUpload}
                     type="submit"
                 >
                     Upload
                 </Button>
+                {this.state.done && <p><Label color='teal'>Upload was successful</Label></p>}
+                {this.state.error !== "" && <p><Label color='red'>this.state.error</Label></p>}
+
             </div>
         )
     }

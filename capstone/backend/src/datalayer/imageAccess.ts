@@ -4,10 +4,15 @@ import {createLogger} from "../utils/logger";
 import {Image} from "../model/Image";
 import {getUserAlbumId} from "../utils/getUserAlbumId";
 
+const bucketName = process.env.IMAGES_S3_BUCKET;
+
 const AWSXRay = require('aws-xray-sdk')
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
+const s3 = new AWS.S3({
+    signatureVersion: 'v4'
+})
 
 const logger = createLogger('datalayer');
 
@@ -69,7 +74,7 @@ export class ImageAccess {
      * @param albumId the ID of the album
      * @param imageId the ID of the image
      */
-    async deleteimage(userId: string, albumId: string, imageId: string): Promise<Image[]> {
+    async deleteimage(userId: string, albumId: string, imageId: string) {
         const userAlbumId = getUserAlbumId(userId, albumId);
         logger.debug(`Delete Image (${userAlbumId},${imageId})`)
 
@@ -81,8 +86,10 @@ export class ImageAccess {
             }
         ).promise();
 
-        logger.debug("Delete done", deleteRes);
-        return deleteRes.Attributes as Image[]
+        logger.debug("Delete from dynamodb done", deleteRes);
+        await removeFromS3Bucket(imageId)
+        logger.debug("Delete from s3 done");
+
     }
 
 
@@ -98,4 +105,24 @@ function createDynamoDBClient() {
     }
 
     return new XAWS.DynamoDB.DocumentClient()
+}
+
+
+async function removeFromS3Bucket(imageId: string) {
+
+    await new Promise((resolve, reject) => {
+            s3.deleteObject({
+                Bucket: bucketName,
+                Key: imageId
+            }, (err, data) => {
+                if (err) {
+                    logger.error(`Could not delete image ${imageId} from S3`);
+                    return reject(err);
+                }
+                return resolve(data);
+            })
+        }
+    );
+
+
 }
