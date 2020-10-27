@@ -80,6 +80,10 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
 
 
@@ -102,7 +106,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}/index/${self:provider.environment.TABLE_IMAGES_SEC_INDEX}
 
 
   CreateAlbum:
@@ -129,7 +133,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}
 
   DeleteAlbum:
     handler: src/lambda/http/deleteAlbum.handler
@@ -149,7 +153,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}/index/${self:provider.environment.TABLE_ALBUMS_SEC_INDEX}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_ALBUMS}
 
 
   GenUploadUrl:
@@ -167,7 +171,7 @@ functions:
         Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
       - Effect: Allow
         Action:
-          - dynamodb:UpdateItem
+          - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}
 
   DeleteImage:

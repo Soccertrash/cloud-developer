@@ -39,6 +39,10 @@ export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
         this.props.history.push(`/album/${albumId}/edit`)
     }
 
+    onOpenAlbumClick = (albumId: string) => {
+        this.props.history.push(`/album/${albumId}/show`)
+    }
+
     onAlbumCreate = async () => {
         try {
             const newAlbum = await createAlbum(this.props.auth.getIdToken(), {
@@ -67,24 +71,6 @@ export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
             alert('Album deletion failed')
         }
     }
-
-    // onAlbumCheck = async (pos: number) => {
-    //   try {
-    //     const album = this.state.albums[pos]
-    //     await patchAlbum(this.props.auth.getIdToken(), album.albumId, {
-    //       name: album.name,
-    //       dueDate: album.dueDate,
-    //       done: !album.done
-    //     })
-    //     this.setState({
-    //       albums: update(this.state.albums, {
-    //         [pos]: { done: { $set: !album.done } }
-    //       })
-    //     })
-    //   } catch {
-    //     alert('Album deletion failed')
-    //   }
-    // }
 
     async componentDidMount() {
         try {
@@ -115,15 +101,16 @@ export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
 
             <Form onSubmit={this.onAlbumCreate}>
 
-                    <Form.Field required>
-                        <label>Album Name:</label>
-                        <input placeholder="Album name" onChange={this.handleNameChange} value={this.state.newAlbumName}/>
-                    </Form.Field>
-                    <Form.Field>
-                        <label>Album Description:</label>
-                        <input placeholder="Album description" onChange={this.handleDescriptionChange} value={this.state.newAlbumDesc}/>
-                    </Form.Field>
-                    <Button type='submit' color="teal">Create Album</Button>
+                <Form.Field required>
+                    <label>Album Name:</label>
+                    <input placeholder="Album name" onChange={this.handleNameChange} value={this.state.newAlbumName}/>
+                </Form.Field>
+                <Form.Field>
+                    <label>Album Description:</label>
+                    <input placeholder="Album description" onChange={this.handleDescriptionChange}
+                           value={this.state.newAlbumDesc}/>
+                </Form.Field>
+                <Button type='submit' color="teal">Create Album</Button>
 
 
                 <Divider/>
@@ -166,7 +153,14 @@ export class Albums extends React.PureComponent<AlbumsProps, AlbumsState> {
                     return (
                         <Grid.Row key={album.albumId}>
                             <Grid.Column width={4} verticalAlign="middle">
-                                {album.name}
+
+                                <Button animated onClick={() => this.onOpenAlbumClick(album.albumId)}>
+                                    <Button.Content visible>{album.name}</Button.Content>
+                                    <Button.Content hidden>
+                                        <Icon name='arrow right'/>
+                                    </Button.Content>
+                                </Button>
+
                             </Grid.Column>
                             <Grid.Column width={10} floated="left">
                                 {album.description}

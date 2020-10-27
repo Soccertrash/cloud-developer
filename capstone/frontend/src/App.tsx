@@ -7,6 +7,7 @@ import { EditAlbum } from './components/EditAlbum'
 import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Albums } from './components/Albums'
+import {Images} from "./components/Images";
 
 export interface AppProps {}
 
@@ -101,6 +102,14 @@ export default class App extends Component<AppProps, AppState> {
           exact
           render={props => {
             return <EditAlbum {...props} auth={this.props.auth} />
+          }}
+        />
+
+        <Route
+          path="/album/:albumId/show"
+          exact
+          render={props => {
+            return <Images {...props} auth={this.props.auth} />
           }}
         />
 

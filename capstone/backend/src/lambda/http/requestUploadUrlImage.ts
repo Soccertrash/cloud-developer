@@ -9,6 +9,7 @@ import {ImageAccess} from "../../datalayer/imageAccess";
 import * as AWS from 'aws-sdk';
 import {getUserAlbumId} from "../../utils/getUserAlbumId";
 import {getUserId} from "../../utils/getUserId";
+import {applyCorsHeader} from "../../utils/corsUtil";
 
 
 const bodyParser = require('body-parser')
@@ -22,9 +23,11 @@ const logger = createLogger("createImage");
 const imageAccess = new ImageAccess();
 
 const bucketName = process.env.IMAGES_S3_BUCKET;
-const urlExpiration = process.env.SIGNED_URL_EXPIRATION;
+const urlExpiration: number = +process.env.SIGNED_URL_EXPIRATION;
 
-app.put('/album/:albumId/image', jsonParser, async (_req, res) => {
+applyCorsHeader(app);
+
+app.post('/album/:albumId/image', jsonParser, async (_req, res) => {
     const albumId = _req.params.albumId;
     logger.info(`AlbumdId ${albumId}`);
 
@@ -42,12 +45,15 @@ app.put('/album/:albumId/image', jsonParser, async (_req, res) => {
 
     await imageAccess.createImage(image);
 
-    const uploadUrl = getUploadUrl(id);
+    const uploadUrl = getUploadUrl(imageId);
+
+    logger.info(`Created SignedURL for image URL  ${imageUrl}`);
 
     res.json({
         uploadUrl: uploadUrl
     })
 })
+
 
 const server = awsServerlessExpress.createServer(app)
 exports.handler = (event, context) => {

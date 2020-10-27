@@ -7,6 +7,7 @@ import {ImageAccess} from "../../datalayer/imageAccess";
 import {getUserId} from "../../utils/getUserId";
 import {Image} from "../../model/Image";
 import * as AWS from "aws-sdk";
+import {applyCorsHeader} from "../../utils/corsUtil";
 
 const app = express()
 const bucketName = process.env.IMAGES_S3_BUCKET;
@@ -44,6 +45,8 @@ function deleteImageFiles(deletedRecords: Image[]) {
     )
 }
 
+applyCorsHeader(app);
+
 app.delete('/album/:albumId/image/:imageId', async (_req, res) => {
     const albumId = _req.params.albumId;
     const imageId = _req.params.imageId;
@@ -56,6 +59,7 @@ app.delete('/album/:albumId/image/:imageId', async (_req, res) => {
 
     res.status(201).send('');
 })
+
 
 const server = awsServerlessExpress.createServer(app)
 exports.handler = (event, context) => {

@@ -8,6 +8,7 @@ import {CreateAlbumRequest} from "../../requests/CreateAlbumRequest";
 import {Album} from "../../model/Album";
 import * as uuid from 'uuid'
 import {getUserId} from "../../utils/getUserId";
+import {applyCorsHeader} from "../../utils/corsUtil";
 
 
 const bodyParser = require('body-parser')
@@ -17,6 +18,8 @@ const app = express()
 const logger = createLogger("createAlbum");
 
 const albumAccess = new AlbumAccess();
+
+applyCorsHeader(app);
 
 app.put('/album', jsonParser, async (_req, res) => {
     const newAlbum: CreateAlbumRequest = _req.body;
@@ -40,6 +43,7 @@ app.put('/album', jsonParser, async (_req, res) => {
         item: albumData
     })
 })
+
 
 const server = awsServerlessExpress.createServer(app)
 exports.handler = (event, context) => {
