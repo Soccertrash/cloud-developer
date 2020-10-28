@@ -21,9 +21,9 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-central-1'}
 
-  #  tracing:
-  #    lambda: true
-  #    apiGateway: true
+  tracing:
+    lambda: true
+    apiGateway: true
 
   environment:
     TABLE_ALBUMS: Albums-${self:provider.stage}
