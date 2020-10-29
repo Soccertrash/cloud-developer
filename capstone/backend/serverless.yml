@@ -112,6 +112,7 @@ functions:
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}/index/${self:provider.environment.TABLE_IMAGES_SEC_INDEX}
 
 
+
   CreateAlbum:
     handler: src/lambda/http/createAlbum.handler
     events:
@@ -171,19 +172,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_IMAGES}/index/${self:provider.environment.TABLE_IMAGES_SEC_INDEX}
 
-#  ResizeImage:
-#    handler: src/lambda/s3/resizeImage.handler
-#    events:
-#      - sns:
-#          arn:
-#            Fn::Join:
-#              - ':'
-#              - - arn:aws:sns
-#                - Ref: AWS::Region
-#                - Ref: AWS::AccountId
-#                - ${self:custom.topicName}
-#          topicName: ${self:custom.topicName}
-
   GenUploadUrl:
     handler: src/lambda/http/requestUploadUrlImage.handler
     events:
@@ -193,6 +181,12 @@ functions:
           cors: true
           authorizer: Auth
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
       - Effect: Allow
         Action:
           - s3:*
